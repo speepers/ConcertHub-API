@@ -1,0 +1,13 @@
+{
+  "name": "concerthub-api",
+  "version": "1.0.0",
+  "description": "API for my ConcertHub website",
+  "license": "ISC",
+  "author": "Adrian Vining",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  }
+}
