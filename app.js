@@ -1,4 +1,5 @@
 import express from 'express';
+import router from './routes.js';
 
 const port = process.env.PORT || 3000;
 const app = express();
@@ -8,20 +9,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// routes (api endpoints)
-app.get('/', (req, res) => {
-  res.send('This is the home page!');
-});
-
-app.get('/hello', (req, res) => {
-  res.send('Hello Express!');
-});
-
-app.get('/goodbye', (req, res) => {
-  res.send('Goodbye Express!');
-});
-
-// more routes go here as needed
+// use routes
+app.use('/api', router);
 
 // start server
 app.listen(port, () => {
