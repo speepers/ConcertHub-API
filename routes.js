@@ -1,28 +1,58 @@
 import express from 'express';
+import sql from 'mssql';
+import 'dotenv/config';
 
 const router = express.Router();
+const dbConnectionString = process.env.DB_CONNECTION_STRING;
 
 // routes (api endpoints)
-router.get('/concerts', (req, res) => {
+router.get('/concerts', async (req, res) => {
 
-    const concerts = [
-        { id: 1, name: 'Rock Fest', date: '2024-07-15' },
-        { id: 2, name: 'Jazz Night', date: '2024-08-20' },
-        { id: 3, name: 'Pop Extravaganza', date: '2024-09-10' }
-    ];
+  await sql.connect(dbConnectionString)
+  
+  const result = await sql.query
+    `SELECT *
+    FROM [dbo].[Concert] a
+    INNER JOIN [dbo].[Band] b 
+    ON a.bandID = b.bandID
+    INNER JOIN [dbo].[Location] c
+    ON a.locationID = c.locationID
+    INNER JOIN [dbo].[Genre] d
+    ON b.genreID = d.genreID`;
 
-    res.json(concerts);
-    res.send('All concerts will be listed here.');
+  console.dir(result);
+
+  // return the results as json
+  res.json(result.recordset);
 });
 
-router.get('/concerts/:id', (req, res) => {
+router.get('/concerts/:id', async (req, res) => {
 
-  const concertId = req.params.id;
-
-  const concert = { id: concertId, name: 'Sample Concert', date: '2024-07-15' };
+  await sql.connect(dbConnectionString)
   
-  res.json(concert);
-  res.send(`Details of concert with ID: ${concertId}`);
+  if (isNaN(req.params.id)) {
+    res.status(400).send('Invalid concert ID. It must be a number.');
+  }
+
+  const result = await sql.query
+    `SELECT *
+    FROM [dbo].[Concert] a
+    INNER JOIN [dbo].[Band] b 
+    ON a.bandID = b.bandID
+    INNER JOIN [dbo].[Location] c
+    ON a.locationID = c.locationID
+    INNER JOIN [dbo].[Genre] d
+    ON b.genreID = d.genreID
+    WHERE concertID = ${req.params.id}`;
+
+  console.dir(result);
+
+  if (result.recordset.length === 0) {
+    res.status(404).send(`Concert with ID ${req.params.id} not found.`);
+  }
+
+  // return the results as json
+  res.json(result.recordset);
 })
 
 router.get('/genres', (req, res) => {
