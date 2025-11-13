@@ -8,7 +8,7 @@ const dbConnectionString = process.env.DB_CONNECTION_STRING;
 // routes (api endpoints)
 router.get('/concerts', async (req, res) => {
 
-  await sql.connect(dbConnectionString)
+  await sql.connect(dbConnectionString);
   
   const result = await sql.query
     `SELECT *
@@ -28,11 +28,11 @@ router.get('/concerts', async (req, res) => {
 
 router.get('/concerts/:id', async (req, res) => {
 
-  await sql.connect(dbConnectionString)
+  await sql.connect(dbConnectionString);
   
   if (isNaN(req.params.id)) {
     res.status(400).send('Invalid concert ID. It must be a number.');
-  }
+  };
 
   const result = await sql.query
     `SELECT *
@@ -49,39 +49,38 @@ router.get('/concerts/:id', async (req, res) => {
 
   if (result.recordset.length === 0) {
     res.status(404).send(`Concert with ID ${req.params.id} not found.`);
-  }
+  };
 
   // return the results as json
   res.json(result.recordset);
-})
-
-router.get('/genres', (req, res) => {
-  res.send('All genres will be listed here.');
-});
-
-router.get('/genres/:id', (req, res) => {
-  const genreId = req.params.id;
-  res.send(`Details of genre with ID: ${genreId}`);
-});
-
-router.get('/locations', (req, res) => {
-  res.send('All locations will be listed here.');
-});
-
-router.get('/locations/:id', (req, res) => {
-  const locationId = req.params.id;
-  res.send(`Details of location with ID: ${locationId}`);
-});
-
-router.get('/bands', (req, res) => {
-  res.send('All bands will be listed here.');
-});
-
-router.get('/bands/:id', (req, res) => {
-  const bandId = req.params.id;
-  res.send(`Details of band with ID: ${bandId}`);
 });
 
 // more routes go here as needed
+
+router.post('/concerts/:id/tickets', async (req, res) => {
+  await sql.connect(dbConnectionString);
+
+  const concertID = parseInt(req.params.id, 10);
+  const {
+    ticketsOrdered,
+    orderDate,
+    customerName,
+    customerEmail,
+    creditCardNumber,
+    CVV,
+    expiryDate
+  } = req.body || {};
+
+  const orderDateObj = orderDate ? new Date(orderDate) : null;
+  const expiryDateObj = expiryDate ? new Date(expiryDate) : null;
+
+  await sql.query
+    `INSERT INTO [dbo].[Purchase]
+    (concertID, ticketsOrdered, orderDate, customerName, customerEmail, creditCardNumber, CVV, expiryDate)
+    VALUES
+    (${concertID}, ${ticketsOrdered}, ${orderDateObj}, ${customerName}, ${customerEmail}, ${creditCardNumber}, ${CVV}, ${expiryDateObj})`;
+
+  res.json({ message: 'Ticket order placed successfully' });
+});
 
 export default router;
